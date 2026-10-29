@@ -23,7 +23,7 @@ import (
 
 const (
 	name    = "gitea_exporter"
-	version = "0.0.0"
+	version = "0.1.0"
 )
 
 func init() {
