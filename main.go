@@ -18,10 +18,19 @@ import (
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	versioncollector "github.com/prometheus/client_golang/prometheus/collectors/version"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/common/version"
+	promversion "github.com/prometheus/common/version"
 )
 
-const name = "gitea_exporter"
+const (
+	name    = "gitea_exporter"
+	version = "0.0.0"
+)
+
+func init() {
+	if promversion.Version == "" {
+		promversion.Version = version
+	}
+}
 
 type config struct {
 	listenAddress string
@@ -42,7 +51,7 @@ func main() {
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Println(version.Print(name))
+		fmt.Println(promversion.Print(name))
 		return
 	}
 	if cfg.giteaURL == "" || cfg.tokenFile == "" {
@@ -121,7 +130,7 @@ func run(cfg config) error {
 		defer cancel()
 		_ = srv.Shutdown(shutdown)
 	}()
-	slog.Info("serving metrics", "addr", srv.Addr, "version", version.Info(), "poll_interval", cfg.pollInterval)
+	slog.Info("serving metrics", "addr", srv.Addr, "version", promversion.Info(), "poll_interval", cfg.pollInterval)
 	if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
@@ -142,7 +151,7 @@ var landingTemplate = template.Must(template.New("landing").Parse(`<!doctype htm
 
 func landingPage(metricsPath string) (http.Handler, error) {
 	var b strings.Builder
-	err := landingTemplate.Execute(&b, struct{ Name, Version, MetricsPath string }{name, version.Version, metricsPath})
+	err := landingTemplate.Execute(&b, struct{ Name, Version, MetricsPath string }{name, promversion.Version, metricsPath})
 	if err != nil {
 		return nil, err
 	}
