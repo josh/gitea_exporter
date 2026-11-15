@@ -49,7 +49,28 @@ func pollWorkflows(ctx context.Context, c *client, prev *workflowsSnapshot) (*wo
 			break
 		}
 	}
+	live, err := liveRepos(ctx, c)
+	if err != nil {
+		return nil, err
+	}
+	maps.DeleteFunc(s.latest, func(k workflowKey, _ workflowRun) bool {
+		_, ok := live[k.repo]
+		return !ok
+	})
 	return s, nil
+}
+
+func liveRepos(ctx context.Context, c *client) (map[string]struct{}, error) {
+	live := map[string]struct{}{}
+	for repos, err := range pages(ctx, c, "/repos/search", url.Values{"archived": {"false"}}, func(p repoSearch) []repository { return p.Data }) {
+		if err != nil {
+			return nil, err
+		}
+		for _, repo := range repos {
+			live[repo.FullName] = struct{}{}
+		}
+	}
+	return live, nil
 }
 
 func workflowName(p string) string {
