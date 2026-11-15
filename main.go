@@ -108,6 +108,14 @@ func run(cfg config) error {
 		col.workflows.Store(s)
 		return nil
 	})
+	go every(ctx, cfg.pollInterval, sourceRunners, col.errors, func(ctx context.Context) error {
+		s, err := pollRunners(ctx, c)
+		if err != nil {
+			return err
+		}
+		col.runners.Store(s)
+		return nil
+	})
 
 	landing, err := landingPage(cfg.telemetryPath)
 	if err != nil {
@@ -142,7 +150,7 @@ var landingTemplate = template.Must(template.New("landing").Parse(`<!doctype htm
 <head><meta charset="utf-8"><title>{{.Name}}</title></head>
 <body>
 <h1>{{.Name}}</h1>
-<p>Prometheus exporter for Gitea pull requests and Actions workflow runs.</p>
+<p>Prometheus exporter for Gitea pull requests, Actions workflow runs and runners.</p>
 <p>Version: {{.Version}}</p>
 <ul><li><a href="{{.MetricsPath}}">Metrics</a></li></ul>
 </body>

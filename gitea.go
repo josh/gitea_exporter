@@ -109,3 +109,14 @@ type workflowRun struct {
 type workflowRuns struct {
 	WorkflowRuns []workflowRun `json:"workflow_runs"`
 }
+
+type actionRunner struct {
+	ID       int64  `json:"id"`
+	Name     string `json:"name"`
+	Status   string `json:"status"`
+	Disabled bool   `json:"disabled"`
+}
+
+type actionRunners struct {
+	Runners []actionRunner `json:"runners"`
+}

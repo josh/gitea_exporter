@@ -1,6 +1,6 @@
 # gitea_exporter
 
-Prometheus exporter for Gitea pull requests and Actions workflow runs.
+Prometheus exporter for Gitea pull requests, Actions workflow runs and runners.
 
 It polls the Gitea API in the background and serves the latest snapshot on `/metrics`, so scrapes never wait on Gitea.
 
@@ -10,7 +10,7 @@ It polls the Gitea API in the background and serves the latest snapshot on `/met
 gitea_exporter --gitea.url=http://gitea:3000 --gitea.token-file=/secrets/token
 ```
 
-The token must belong to a site admin and needs the `read:admin` and `read:repository` scopes. `read:admin` covers `/admin/actions/runs`, and admin access lets repository search see private repositories.
+The token must belong to a site admin and needs the `read:admin` and `read:repository` scopes. `read:admin` covers `/admin/actions/runs` and `/admin/actions/runners`, and admin access lets repository search see private repositories.
 
 | Flag | Default | Description |
 | --- | --- | --- |
@@ -30,6 +30,7 @@ The token must belong to a site admin and needs the `read:admin` and `read:repos
 | `gitea_pull_request_commit_status` | `gitea_repo`, `pull_request`, `author`, `gitea_commit_status` | Combined commit status of each open pull request's head commit, one series per state set to 0 or 1 |
 | `gitea_workflow_run_conclusion` | `gitea_repo`, `workflow_name`, `gitea_workflow_run_conclusion` | Conclusion of the newest completed run of each workflow on the default branch, one series per conclusion set to 0 or 1 |
 | `gitea_workflow_run_number` | `gitea_repo`, `workflow_name` | Run number of that newest run |
-| `gitea_exporter_last_success_timestamp_seconds` | `source` | Unix time of the last successful update of `issues` or `workflows` |
+| `gitea_actions_runner_online` | `runner_id`, `runner_name` | Whether each enabled Actions runner is online, set to 0 or 1 |
+| `gitea_exporter_last_success_timestamp_seconds` | `source` | Unix time of the last successful update of `issues`, `workflows` or `runners` |
 | `gitea_exporter_errors_total` | `source` | Failed updates |
 | `gitea_exporter_build_info` | `version`, `revision`, `branch`, `goversion`, `goos`, `goarch`, `tags` | Build metadata |

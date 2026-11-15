@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strconv"
 	"sync/atomic"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -9,6 +10,7 @@ import (
 const (
 	sourceIssues    = "issues"
 	sourceWorkflows = "workflows"
+	sourceRunners   = "runners"
 )
 
 var (
@@ -40,6 +42,11 @@ var (
 		"Run number of the newest completed workflow run on the default branch.",
 		[]string{"gitea_repo", "workflow_name"}, nil,
 	)
+	runnerOnlineDesc = prometheus.NewDesc(
+		"gitea_actions_runner_online",
+		"Whether each enabled Actions runner is online.",
+		[]string{"runner_id", "runner_name"}, nil,
+	)
 	lastSuccessDesc = prometheus.NewDesc(
 		"gitea_exporter_last_success_timestamp_seconds",
 		"Unix time of the last successful update per source.",
@@ -50,6 +57,7 @@ var (
 type collector struct {
 	issues    atomic.Pointer[issuesSnapshot]
 	workflows atomic.Pointer[workflowsSnapshot]
+	runners   atomic.Pointer[runnersSnapshot]
 	errors    *prometheus.CounterVec
 }
 
@@ -62,6 +70,7 @@ func newCollector() *collector {
 	}
 	c.errors.WithLabelValues(sourceIssues)
 	c.errors.WithLabelValues(sourceWorkflows)
+	c.errors.WithLabelValues(sourceRunners)
 	return c
 }
 
@@ -71,6 +80,7 @@ func (c *collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- prStatusDesc
 	ch <- runConclusionDesc
 	ch <- runNumberDesc
+	ch <- runnerOnlineDesc
 	ch <- lastSuccessDesc
 	c.errors.Describe(ch)
 }
@@ -98,6 +108,12 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 			ch <- prometheus.MustNewConstMetric(runNumberDesc, prometheus.GaugeValue, float64(run.RunNumber), k.repo, k.workflow)
 		}
 		ch <- prometheus.MustNewConstMetric(lastSuccessDesc, prometheus.GaugeValue, float64(s.at.Unix()), sourceWorkflows)
+	}
+	if s := c.runners.Load(); s != nil {
+		for _, r := range s.runners {
+			ch <- prometheus.MustNewConstMetric(runnerOnlineDesc, prometheus.GaugeValue, oneHot(r.Status == "online"), strconv.FormatInt(r.ID, 10), r.Name)
+		}
+		ch <- prometheus.MustNewConstMetric(lastSuccessDesc, prometheus.GaugeValue, float64(s.at.Unix()), sourceRunners)
 	}
 	c.errors.Collect(ch)
 }
