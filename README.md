@@ -28,7 +28,7 @@ The token must belong to a site admin and needs the `read:admin` and `read:repos
 | `gitea_open_issues` | `gitea_repo` | Open issues per repository |
 | `gitea_open_pull_requests` | `gitea_repo`, `author` | Open pull requests per repository and author |
 | `gitea_pull_request_commit_status` | `gitea_repo`, `pull_request`, `author`, `gitea_commit_status` | Combined commit status of each open pull request's head commit, one series per state set to 0 or 1 |
-| `gitea_workflow_run_conclusion` | `gitea_repo`, `workflow_name`, `gitea_workflow_run_conclusion` | Conclusion of the newest completed run of each workflow on the default branch, one series per conclusion set to 0 or 1 |
+| `gitea_workflow_run_conclusion` | `gitea_repo`, `workflow_name`, `gitea_workflow_run_conclusion` | Conclusion of the newest completed run of each enabled workflow on the default branch, one series per conclusion set to 0 or 1; a workflow that is deleted or disabled drops out |
 | `gitea_workflow_run_number` | `gitea_repo`, `workflow_name` | Run number of that newest run |
 | `gitea_actions_runner_online` | `runner_id`, `runner_name` | Whether each enabled Actions runner is online, set to 0 or 1 |
 | `gitea_exporter_last_success_timestamp_seconds` | `source` | Unix time of the last successful update of `issues`, `workflows` or `runners` |

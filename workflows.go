@@ -57,7 +57,36 @@ func pollWorkflows(ctx context.Context, c *client, prev *workflowsSnapshot) (*wo
 		_, ok := live[k.repo]
 		return !ok
 	})
+	active, err := activeWorkflows(ctx, c, s.latest)
+	if err != nil {
+		return nil, err
+	}
+	maps.DeleteFunc(s.latest, func(k workflowKey, _ workflowRun) bool {
+		_, ok := active[k]
+		return !ok
+	})
 	return s, nil
+}
+
+func activeWorkflows(ctx context.Context, c *client, latest map[workflowKey]workflowRun) (map[workflowKey]struct{}, error) {
+	active := map[workflowKey]struct{}{}
+	listed := map[string]bool{}
+	for k := range latest {
+		if listed[k.repo] {
+			continue
+		}
+		listed[k.repo] = true
+		var w actionWorkflows
+		if err := c.get(ctx, "/repos/"+k.repo+"/actions/workflows", nil, &w); err != nil {
+			return nil, err
+		}
+		for _, wf := range w.Workflows {
+			if wf.State == "active" {
+				active[workflowKey{k.repo, wf.ID}] = struct{}{}
+			}
+		}
+	}
+	return active, nil
 }
 
 func liveRepos(ctx context.Context, c *client) (map[string]struct{}, error) {

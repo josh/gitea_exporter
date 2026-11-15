@@ -110,6 +110,15 @@ type workflowRuns struct {
 	WorkflowRuns []workflowRun `json:"workflow_runs"`
 }
 
+type actionWorkflow struct {
+	ID    string `json:"id"`
+	State string `json:"state"`
+}
+
+type actionWorkflows struct {
+	Workflows []actionWorkflow `json:"workflows"`
+}
+
 type actionRunner struct {
 	ID       int64  `json:"id"`
 	Name     string `json:"name"`
