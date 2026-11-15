@@ -2,7 +2,7 @@
 
 Prometheus exporter for Gitea pull requests, Actions workflow runs and runners.
 
-It polls the Gitea API in the background and serves the latest snapshot on `/metrics`, so scrapes never wait on Gitea.
+It polls the Gitea API in the background and serves the latest snapshot on `/metrics`, so scrapes never wait on Gitea. `/healthz` answers `ok` while the server is up, for liveness and readiness probes.
 
 ## Usage
 

@@ -127,6 +127,9 @@ func run(cfg config) error {
 		ErrorHandling: promhttp.ContinueOnError,
 	}))
 	mux.Handle("GET /{$}", landing)
+	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = fmt.Fprintln(w, "ok")
+	})
 	srv := &http.Server{
 		Addr:              cfg.listenAddress,
 		Handler:           mux,
